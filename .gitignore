@@ -1,0 +1,30 @@
+# Binaries
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+*.war
+*.ear
+*.sar
+*.class
+
+# Jetbrain IDEAs
+.idea/
+
+# VS Code
+.vscode/
+
+# Environment variables
+.env
+
+# Certificate files
+certs
+*.pem
+*.cer
+
+# OS
+.DS_Store
