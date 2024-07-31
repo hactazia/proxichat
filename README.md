@@ -11,8 +11,10 @@
 [![Spigot](https://img.shields.io/badge/Spigot-00AA00?logo=spigotmc&logoColor=white)](https://www.spigotmc.org)
 
 ## Description
+> Project based on [proxi-chat by BGoodes](https://github.com/BGoodes/proxi-chat).
 
 This project aims to add proximity-based voice chat to any game by bringing a web-based platform.
+
 
 ## Installation
 ### For Server
