@@ -26,10 +26,6 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
     UdpServer udpServer;
     EventSender eventSender;
     EventListener eventListener;
-    String group;
-    String display;
-    int minDistance;
-    int maxDistance;
     int[] tasks;
 
     @Override
@@ -48,10 +44,6 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
         config.options().copyDefaults(true);
         saveConfig();
 
-        display = config.getString("display");
-        group = config.getString("group");
-        minDistance = config.getInt("min_distance");
-        maxDistance = config.getInt("max_distance");
         udpHandler = new UdpHandler(this);
         udpServer = new UdpServer(this);
         eventSender = new EventSender(this);
@@ -63,14 +55,14 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
         tasks[1] = getServer().getScheduler().scheduleSyncRepeatingTask(this, this.udpServer::onTick, 0L, 1L);
 
         getLogger().info("ProxiChat configuration:");
-        getLogger().info("Server Display: " + display);
-        getLogger().info("Server Group: " + group);
+        getLogger().info("Server Display: " + config.getString("display"));
+        getLogger().info("Server Group: " + config.getString("group"));
         getLogger().info("Server Address: " + getConfig().getString("server_ip"));
         getLogger().info("Server Port: " + getConfig().getInt("server_port"));
         getLogger().info("Server Ping Interval: " + getConfig().getInt("server_ping") + "s");
         getLogger().info("Server Timeout: " + getConfig().getInt("server_timeout") + "s");
-        getLogger().info("Server Min Distance: " + minDistance + " blocks");
-        getLogger().info("Server Max Distance: " + maxDistance + " blocks");
+        getLogger().info("Server Min Distance: " + config.getInt("min_distance") + " blocks");
+        getLogger().info("Server Max Distance: " + config.getInt("max_distance") + " blocks");
     }
 
     @Override
@@ -83,7 +75,6 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
         udpHandler = null;
         udpServer.close();
         udpServer = null;
-        group = null;
         eventListener.tasks.clear();
         eventListener = null;
         eventSender = null;

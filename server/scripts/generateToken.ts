@@ -35,15 +35,9 @@ const content: JwtPayload = {
      * 
      */
     links: [
-        { 
-            type: 'minecraft', 
-            id: 'd8092d79-d42a-4481-b8fa-97efacb4e2d6', 
-            at: Date.now(), 
-            by: 'generator' 
-        },
         {
             type: 'moderator',
-            id: 'admin-01',
+            id: 'demo-server-1',
             at: Date.now(),
             by: 'generator'
         }

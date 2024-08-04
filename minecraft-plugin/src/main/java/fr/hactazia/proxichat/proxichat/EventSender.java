@@ -37,14 +37,14 @@ public class EventSender {
         main.udpHandler.send(json);
     }
 
-    public void SendAuthentification(String token) {
+    public void SendAuthentification(String token, String group, String display, int minDistance, int maxDistance) {
         var json = new JsonObject();
         json.addProperty("type", "auth");
         json.addProperty("link", "minecraft");
-        json.addProperty("group", main.group);
-        json.addProperty("display", main.display);
-        json.addProperty("min_distance", main.minDistance);
-        json.addProperty("max_distance", main.maxDistance);
+        json.addProperty("group", group);
+        json.addProperty("display", display);
+        json.addProperty("min_distance", minDistance);
+        json.addProperty("max_distance", maxDistance);
         json.addProperty("token", token);
 
         var obj = new JsonObject();

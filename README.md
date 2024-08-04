@@ -11,6 +11,7 @@
 [![Spigot](https://img.shields.io/badge/Spigot-00AA00?logo=spigotmc&logoColor=white)](https://www.spigotmc.org)
 
 ## Description
+> Project based on [proxi-chat by BGoodes](https://github.com/BGoodes/proxi-chat).
 
 This project aims to add proximity-based voice chat to any game by bringing a web-based platform.
 
@@ -30,7 +31,7 @@ This project aims to add proximity-based voice chat to any game by bringing a we
 6. Restart the server.
 ### For Make a Token
 1. Go to `server/` folder.
-2. Go on `generateToken.js` and read cotent to understand how to use.
+2. Go on `scripts/generateToken.js` and read cotent to understand how to use.
 2. Run `npm run token`.
 
 ## License

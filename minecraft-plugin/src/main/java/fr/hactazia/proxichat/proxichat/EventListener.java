@@ -106,7 +106,13 @@ public class EventListener implements Listener {
     }
 
     public void onPleaseAuth() {
-        main.eventSender.SendAuthentification(main.getConfig().getString("server_token"));
+        main.eventSender.SendAuthentification(
+            main.getConfig().getString("server_token"),
+            main.getConfig().getString("group"),
+            main.getConfig().getString("display"),
+            main.getConfig().getInt("min_distance"),
+            main.getConfig().getInt("max_distance")
+        );
     }
 
     public void onChatterConnect(JsonObject message) {

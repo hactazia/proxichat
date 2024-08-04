@@ -13,7 +13,10 @@ export default class JwtManager {
     }
 
     static verify(token: string): JwtPayload {
-        var data = token && typeof token === 'string' ? jwt.verify(token, getJwtSecret(), this.options) as JwtPayload : null;
+        let data: JwtPayload | null = null;
+        try {
+            data = token && typeof token === 'string' ? jwt.verify(token, getJwtSecret(), this.options) as JwtPayload : null;
+        } catch (e) { data = null; }
         if (!data) data = {
             version: 1,
             uid: randomUUID(),
