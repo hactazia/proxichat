@@ -30,5 +30,5 @@ export interface NetPacket {
 
 export function getPort(): number {
     var envPort = parseInt(process.env.UDP_PORT || '');
-    return isNaN(envPort) ? 3000 : envPort;
+    return isNaN(envPort) ? 3001 : envPort;
 }

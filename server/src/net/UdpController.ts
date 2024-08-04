@@ -1,6 +1,5 @@
 import { createSocket, Socket } from "node:dgram";
 import NetManager, { getPort } from "./NetManager";
-import { get } from "node:http";
 
 export default class UdpController {
 

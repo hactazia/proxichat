@@ -5,7 +5,6 @@ Dotenv.config();
 
 import { createSocket } from 'dgram';
 import { EventEmitter } from 'events';
-import { randomBytes } from 'crypto';
 
 const server_ping = parseInt(process.env.SERVER_PING || '') || 1000;
 const server_timeout = parseInt(process.env.SERVER_TIMEOUT || '') || 5000;
