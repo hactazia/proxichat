@@ -76,8 +76,12 @@ export class NetHandler {
                 break;
             case "chatter_data":
                 this.onData(data, data.json);
+                break;
+            case "close":
+                this.onClose(data);
+                break;
             default:
-                console.log('Unknown type', data.json.type);
+                console.log('Unknown net type', data.json.type);
                 break;
         }
     }
@@ -103,6 +107,7 @@ export class NetHandler {
         if (!player) return console.log('Chatter Data: Player not found');
         this.main.emit('server_data', server, player, obj.event, obj.data);
     }
+
 
     onPing(data: NetPacket) {
         data.callback(Buffer.from(JSON.stringify({ type: 'pong' })));
@@ -169,6 +174,13 @@ export class NetHandler {
                 this.main.emit('server_create', this.servers[this.servers.length - 1]);
             }
         }
+    }
+
+    onClose(data: NetPacket) {
+        var server = this.servers.find(s => s.address === data.address && s.port === data.port);
+        if (!server) return console.log('CLOSE: Server not found');
+        this.servers = this.servers.filter(s => s.address !== data.address && s.port !== data.port);
+        this.main.emit('server_close', server);
     }
 
     onJoin(data: NetPacket, obj: any) {

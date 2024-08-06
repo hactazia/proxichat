@@ -37,7 +37,7 @@ const content: JwtPayload = {
     links: [
         {
             type: 'moderator',
-            id: 'demo-server-1',
+            id: 'dev-server-1',
             at: Date.now(),
             by: 'generator'
         }

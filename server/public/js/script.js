@@ -174,6 +174,24 @@ socket.on('message', (event, data) => {
         setMute(data.data.mute, 2);
     } else if (data.event === 'get_mute') {
         sendSessionData(session._id, 'is_mute', { ...isMuted, state: data.data.state });
+    } else if (data.event === 'log') {
+        var message = data.data.message;
+        // can be a string, or an object ({text: string, bold: boolean, italic: boolean, color: string}) or an array of strings and objects
+        if (typeof message === 'string') message = [{ text: message }];
+        if (typeof message === 'object' && !Array.isArray(message)) message = [message];
+        message = message.map(m => typeof m === 'string' ? { text: m } : m);
+
+        var node = document.createElement('div');
+        node.classList.add('message');
+        for (let m of message) {
+            let span = document.createElement('span');
+            span.textContent = m.text;
+            if (m.bold) span.style.fontWeight = 'bold';
+            if (m.italic) span.style.fontStyle = 'italic';
+            if (m.color) span.style.color = m.color;
+            node.appendChild(span);
+        }
+        Logger.logNode(node);
     }
 });
 

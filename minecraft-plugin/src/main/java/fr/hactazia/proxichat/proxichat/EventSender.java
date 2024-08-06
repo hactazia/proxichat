@@ -2,12 +2,12 @@ package fr.hactazia.proxichat.proxichat;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerJoinEvent;
 
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
@@ -85,6 +85,12 @@ public class EventSender {
         main.udpHandler.send(json);
     }
 
+    public void SendClose() {
+        var json = new JsonObject();
+        json.addProperty("type", "close");
+        main.udpHandler.send(json);
+    }
+
 
     public void SendPosition(Player player) {
         var x = player.getLocation().getX();
@@ -130,5 +136,54 @@ public class EventSender {
         SendData(player, "set_mute", json);
         main.eventListener.isMuted(player).thenAccept(mute1 -> future.complete(mute1 == mute));
         return future;
+    }
+
+    public void SendLogMessage(Player player, String message) {
+        var json = new JsonObject();
+        json.addProperty("type", "log");
+        json.addProperty("message", message);
+        SendData(player, "log", json);
+    }
+
+    public void SendLogMessage(Player player, JsonObject object) {
+        var json = new JsonObject();
+        json.addProperty("type", "log");
+        json.add("message", object);
+        SendData(player, "log", json);
+    }
+
+    public void SendLogMessage(Player player, JsonArray array) {
+        var json = new JsonObject();
+        json.addProperty("type", "log");
+        json.add("message", array);
+        SendData(player, "log", json);
+    }
+
+    public void SendLogMessage(Player player, BaseComponent component) {
+        var text = new JsonObject();
+        text.addProperty("text", component.toPlainText());
+        text.addProperty("color", component.getColor().getName());
+        text.addProperty("bold", component.isBold());
+        text.addProperty("italic", component.isItalic());
+        text.addProperty("underlined", component.isUnderlined());
+        text.addProperty("strikethrough", component.isStrikethrough());
+        text.addProperty("obfuscated", component.isObfuscated());
+        SendLogMessage(player, text);
+    }
+
+    public void SendLogMessage(Player player, BaseComponent... components) {
+        var array = new JsonArray();
+        for (BaseComponent component : components) {
+            var text = new JsonObject();
+            text.addProperty("text", component.toPlainText());
+            text.addProperty("color", component.getColor().getName());
+            text.addProperty("bold", component.isBold());
+            text.addProperty("italic", component.isItalic());
+            text.addProperty("underlined", component.isUnderlined());
+            text.addProperty("strikethrough", component.isStrikethrough());
+            text.addProperty("obfuscated", component.isObfuscated());
+            array.add(text);
+        }
+        SendLogMessage(player, array);
     }
 }

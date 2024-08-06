@@ -1,6 +1,7 @@
 package fr.hactazia.proxichat.proxichat;
 
 import com.google.gson.JsonObject;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -91,7 +92,7 @@ public class EventListener implements Listener {
         var player = main.getServer().getPlayer(UUID.fromString(data.get("id").getAsString()));
         if (player == null || url == null) return;
         main.getLogger().info("Connector link: " + url + " for " + data.get("id").getAsString());
-        TextComponent message = new TextComponent("Click me to link your account!");
+        TextComponent message = new TextComponent(main.lang.Format("click_to_link"));
         message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
         message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(url)));
         player.spigot().sendMessage(message);
@@ -101,30 +102,33 @@ public class EventListener implements Listener {
         main.getLogger().warning("No connector found for " + message.get("id").getAsString());
         var player = main.getServer().getPlayer(UUID.fromString(message.get("id").getAsString()));
         if (player == null) return;
-        player.sendMessage("No connector found for your account.");
+        player.sendMessage(main.lang.Format("no_connector"));
         this.main.eventSender.SendMakeConnectorLink(player);
     }
 
     public void onPleaseAuth() {
         main.eventSender.SendAuthentification(
-            main.getConfig().getString("server_token"),
-            main.getConfig().getString("group"),
-            main.getConfig().getString("display"),
-            main.getConfig().getInt("min_distance"),
-            main.getConfig().getInt("max_distance")
+                main.getConfig().getString("server_token"),
+                main.getConfig().getString("group"),
+                main.getConfig().getString("display"),
+                main.getConfig().getInt("min_distance"),
+                main.getConfig().getInt("max_distance")
         );
     }
 
     public void onChatterConnect(JsonObject message) {
         var player = main.getServer().getPlayer(UUID.fromString(message.get("id").getAsString()));
         if (player == null) return;
-        player.sendMessage("You are now connected with ProxiChat!");
+        player.sendMessage(main.lang.Format("connect_to_service"));
+        String logMessage = main.getConfig().getString("log_message", "");
+        if (logMessage.isEmpty()) return;
+        main.eventSender.SendLogMessage(player, TextComponent.fromLegacyText(logMessage));
     }
 
     public void onChatterDisconnect(JsonObject message) {
         var player = main.getServer().getPlayer(UUID.fromString(message.get("id").getAsString()));
         if (player == null) return;
-        player.sendMessage("You are now disconnected from ProxiChat!");
+        player.sendMessage(main.lang.Format("disconnect_from_service"));
     }
 
     public void onChatterData(JsonObject message) {
@@ -138,7 +142,7 @@ public class EventListener implements Listener {
                 var by = data.get("by").getAsInt();
                 var ir = data.has("state");
                 if (by == 1 && !ir)
-                    player.sendMessage(mute ? "You are now muted!" : "You are no longer muted!");
+                    player.sendMessage(main.lang.Format(mute ? "mute_player" : "unmute_player"));
                 break;
             default:
                 main.getLogger().warning("Unknown chatter data event: " + event);

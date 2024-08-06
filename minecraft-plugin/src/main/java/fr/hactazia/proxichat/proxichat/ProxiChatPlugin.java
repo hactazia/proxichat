@@ -26,6 +26,7 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
     UdpServer udpServer;
     EventSender eventSender;
     EventListener eventListener;
+    LanguageConfig lang;
     int[] tasks;
 
     @Override
@@ -44,6 +45,7 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
         config.options().copyDefaults(true);
         saveConfig();
 
+        lang = new LanguageConfig(this);
         udpHandler = new UdpHandler(this);
         udpServer = new UdpServer(this);
         eventSender = new EventSender(this);
@@ -71,6 +73,7 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
         for (var task : tasks) getServer().getScheduler().cancelTask(task);
         for (Player player : getServer().getOnlinePlayers())
             eventSender.SendPlayerQuit(player);
+        eventSender.SendClose();
         udpHandler.close();
         udpHandler = null;
         udpServer.close();
@@ -85,18 +88,25 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
         if (!command.getName().equalsIgnoreCase("pc") && !command.getName().equalsIgnoreCase("proxichat"))
             return false;
 
+        // disable command for non-players
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(lang.Format("player_only_command"));
+            return true;
+        }
+
         if (args.length == 0) {
-            sender.sendMessage("Usage: /pchat help");
+            sender.sendMessage(lang.Format("command_usage", command.getName()));
             return true;
         }
 
         if (args[0].equalsIgnoreCase("help")) {
-            sender.sendMessage("ProxiChat commands:");
-            sender.sendMessage("/pchat help - Show this help message");
-            sender.sendMessage("/pchat mute <player> - Mute the ProxiChat");
-            sender.sendMessage("/pchat unmute <player> - Unmute the ProxiChat");
-            sender.sendMessage("/pchat mutetoggle <player> - Toggle the ProxiChat mute");
-            sender.sendMessage("/pchat link - Link your account to ProxiChat");
+            sender.sendMessage(lang.Format("command_list"));
+            sender.sendMessage(lang.FormatWithOutPrefix("command_help", command.getName()));
+            sender.sendMessage(lang.FormatWithOutPrefix("command_mute", command.getName()));
+            sender.sendMessage(lang.FormatWithOutPrefix("command_unmute", command.getName()));
+            sender.sendMessage(lang.FormatWithOutPrefix("command_mute_toggle", command.getName()));
+            sender.sendMessage(lang.FormatWithOutPrefix("command_link", command.getName()));
+            sender.sendMessage(lang.FormatWithOutPrefix("command_mute_status", command.getName()));
             return true;
         }
 
@@ -104,28 +114,28 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
             Player target;
             if (args.length < 2) {
                 if (!(sender instanceof Player)) {
-                    sender.sendMessage("Usage: /pchat mute <player>");
+                    sender.sendMessage(lang.Format("command_mute_usage", command.getName()));
                     return true;
                 } else target = (Player) sender;
             } else {
                 if (!sender.isOp()) {
-                    sender.sendMessage("You must be an operator to mute other players.");
+                    sender.sendMessage(lang.Format("no_permission"));
                     return true;
                 }
                 target = getServer().getPlayer(args[1]);
             }
             if (target == null) {
-                sender.sendMessage("Player not found.");
+                sender.sendMessage(lang.Format("no_player"));
                 return true;
             }
 
             eventSender.SetMute(target, true).thenAccept(success -> {
                 if (success) {
                     if (sender != target)
-                        sender.sendMessage("Player " + target.getName() + " is now muted");
-                    target.sendMessage("You are now muted");
+                        sender.sendMessage(lang.Format("player_muted", target.getName()));
+                    target.sendMessage(lang.Format("mute_player"));
                 } else {
-                    sender.sendMessage("Failed to mute player " + target.getName());
+                    sender.sendMessage(lang.Format("mute_failed", target.getName()));
                 }
             });
             return true;
@@ -133,28 +143,28 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
             Player target;
             if (args.length < 2) {
                 if (!(sender instanceof Player)) {
-                    sender.sendMessage("Usage: /pchat unmute <player>");
+                    sender.sendMessage(lang.Format("command_unmute_usage", command.getName()));
                     return true;
                 } else target = (Player) sender;
             } else {
                 if (!sender.isOp()) {
-                    sender.sendMessage("You must be an operator to unmute other players.");
+                    sender.sendMessage(lang.Format("no_permission"));
                     return true;
                 }
                 target = getServer().getPlayer(args[1]);
             }
             if (target == null) {
-                sender.sendMessage("Player not found.");
+                sender.sendMessage(lang.Format("no_player"));
                 return true;
             }
 
             eventSender.SetMute(target, false).thenAccept(success -> {
                 if (success) {
                     if (sender != target)
-                        sender.sendMessage("Player " + target.getName() + " is no longer muted");
-                    target.sendMessage("You are no longer muted!");
+                        sender.sendMessage(lang.Format("player_unmuted", target.getName()));
+                    target.sendMessage(lang.Format("unmute_player"));
                 } else {
-                    sender.sendMessage("Failed to unmute player " + target.getName());
+                    sender.sendMessage(lang.Format("unmute_failed", target.getName()));
                 }
             });
             return true;
@@ -162,18 +172,18 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
             Player target;
             if (args.length < 2) {
                 if (!(sender instanceof Player)) {
-                    sender.sendMessage("Usage: /pchat mutetoggle <player>");
+                    sender.sendMessage(lang.Format("command_mute_toggle_usage", command.getName()));
                     return true;
                 } else target = (Player) sender;
             } else {
                 if (!sender.isOp()) {
-                    sender.sendMessage("You must be an operator to toggle mute other players.");
+                    sender.sendMessage(lang.Format("no_permission"));
                     return true;
                 }
                 target = getServer().getPlayer(args[1]);
             }
             if (target == null) {
-                sender.sendMessage("Player not found.");
+                sender.sendMessage(lang.Format("no_player"));
                 return true;
             }
 
@@ -181,10 +191,10 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
                 eventSender.SetMute(target, !mute).thenAccept(success -> {
                     if (success) {
                         if (sender != target)
-                            sender.sendMessage("Player " + target.getName() + " is now " + (mute ? "unmuted" : "muted"));
-                        target.sendMessage(mute ? "You are no longer muted!" : "You are now muted!");
+                            sender.sendMessage(lang.Format(mute ? "player_unmuted" : "player_muted", target.getName()));
+                        target.sendMessage(lang.Format(mute ? "unmute_player" : "mute_player"));
                     } else {
-                        sender.sendMessage("Failed to toggle mute for player " + target.getName());
+                        sender.sendMessage(lang.Format(mute ? "unmute_failed" : "mute_failed", target.getName()));
                     }
                 });
             });
@@ -192,10 +202,24 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
             return true;
         } else if (args[0].equalsIgnoreCase("link")) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage("You must be a player to link your account.");
+                sender.sendMessage(lang.Format("no_player"));
                 return true;
             }
             eventSender.SendMakeConnectorLink((Player) sender);
+            return true;
+        } else if (args[0].equalsIgnoreCase("mutestatus")) {
+            if (args.length < 2) {
+                sender.sendMessage(lang.Format("command_mute_status_usage", command.getName()));
+                return true;
+            }
+            Player target = getServer().getPlayer(args[1]);
+            if (target == null) {
+                sender.sendMessage(lang.Format("no_player"));
+                return true;
+            }
+            eventListener.isMuted(target).thenAccept(mute -> {
+                sender.sendMessage(lang.Format(mute ? "player_muted_status" : "player_unmuted_status", target.getName()));
+            });
             return true;
         }
         return false;
@@ -210,9 +234,14 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
             list.add("unmute");
             list.add("mutetoggle");
             list.add("link");
+            list.add("mutestatus");
             return list;
         } else if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("mute") || args[0].equalsIgnoreCase("unmute") || args[0].equalsIgnoreCase("mutetoggle")) {
+            if (args[0].equalsIgnoreCase("mute")
+                    || args[0].equalsIgnoreCase("unmute")
+                    || args[0].equalsIgnoreCase("mutetoggle")
+                    || args[0].equalsIgnoreCase("mutestatus")
+            ) {
                 var list = new ArrayList<String>();
                 for (var player : getServer().getOnlinePlayers()) {
                     list.add(player.getName());

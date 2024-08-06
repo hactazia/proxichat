@@ -66,6 +66,7 @@ export default class ConnectorHandler {
         this.main.on('server_update', this.onServerUpdate.bind(this));
         this.main.on('socket_message', this.onSocketMessage.bind(this));
         this.main.on('server_data', this.onServerData.bind(this));
+        this.main.on('server_close', this.onServerDelete.bind(this));
     }
 
     users: Map<string, ConUser> = new Map();
@@ -86,7 +87,7 @@ export default class ConnectorHandler {
                 this.onChatterData(socket.id, data);
                 break;
             default:
-                console.log('Unknown event', event);
+                console.log('Unknown socket event', event);
         }
     }
 
@@ -480,10 +481,29 @@ export default class ConnectorHandler {
 
     onServerCreate(server: NetServer) {
         console.log('[PChat] Server create', server.link, server.group);
+        for (let player of server.players) this.onPlayerJoin(server, player);
+        let chatters = this.getChattersByServer(server.group, server.link);
+        if (chatters.length) for (let chatter of chatters)
+            this.onChatterJoin(chatter.socket_id, {
+                player_id: chatter.player_id,
+                type: chatter.type,
+                session_id: chatter.server_id,
+                peer_id: chatter.peer_id
+            });
     }
 
     onServerDelete(server: NetServer) {
         console.log('[PChat] Server delete', server.link, server.group);
+        for (let player of server.players) this.onPlayerLeave(server, player);
+        let chatters = this.getChattersByServer(server.group, server.link);
+        if (chatters.length) for (let chatter of chatters)
+            this.onChatterLeave(chatter.socket_id, {
+                player_id: chatter.player_id,
+                type: chatter.type,
+                server_id: chatter.server_id,
+                user_id: chatter.server_id
+            });
+        this.servers.splice(this.servers.indexOf(server), 1);
     }
 
     onServerUpdate(server: NetServer) {

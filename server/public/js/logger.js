@@ -9,6 +9,10 @@ export default class Logger {
         this.node.appendChild(p);
     }
 
+    static logNode(node) {
+        this.node.appendChild(node);
+    }
+
     static clear() {
         this.node.innerHTML = '';
     }
