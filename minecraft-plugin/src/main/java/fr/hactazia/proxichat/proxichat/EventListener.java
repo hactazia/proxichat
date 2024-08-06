@@ -1,6 +1,8 @@
 package fr.hactazia.proxichat.proxichat;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import io.netty.channel.Channel;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -11,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
+import org.bukkit.plugin.messaging.PluginMessageListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +22,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
-public class EventListener implements Listener {
+public class EventListener implements Listener, PluginMessageListener {
     public ProxiChatPlugin main;
 
     public EventListener(ProxiChatPlugin main) {
@@ -179,4 +182,46 @@ public class EventListener implements Listener {
         }
     }
 
+    @Override
+    public void onPluginMessageReceived(String s, Player player, byte[] bytes) {
+        if (!s.equals("proxichat:bridge")) return;
+        try {
+            onJsonMessage(JsonParser.parseString(new String(bytes)).getAsJsonObject(), player);
+        } catch (Exception e) {
+            main.getLogger().severe("Message conversion exception: " + e.getMessage() + "\n" + new String(bytes));
+            for (StackTraceElement element : e.getStackTrace()) {
+                main.getLogger().severe(element.toString());
+            }
+        }
+    }
+
+    public void onJsonMessage(JsonObject message, Player player) {
+        var type = message.get("type").getAsString();
+        switch (type) {
+            case "ping":
+                main.eventSender.EmitPluginPong(player);
+                break;
+            case "get_mute":
+                main.eventListener.isMuted(player).thenAccept(mute -> {
+                    main.eventSender.EmitPluginIsMute(player, mute);
+                });
+                break;
+            case "set_mute":
+                var mute = message.get("mute").getAsBoolean();
+                main.eventSender.SetMute(player, mute).thenAccept(success -> {
+                    if (success)
+                        main.eventSender.EmitPluginIsMute(player, mute);
+                });
+                break;
+            case "get_info":
+                main.eventSender.EmitPluginInfos(
+                        player,
+                        main.getConfig().getString("group"),
+                        main.getConfig().getString("display"),
+                        main.getConfig().getInt("min_distance"),
+                        main.getConfig().getInt("max_distance")
+                );
+                break;
+        }
+    }
 }

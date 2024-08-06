@@ -38,7 +38,8 @@ public class UdpServer {
                 System.arraycopy(packet.getData(), 0, buff, 0, packet.getLength());
                 onMessage(buff);
             } catch (Exception e) {
-                main.getLogger().severe("Receive exception: " + e.getMessage());
+                if (!e.getMessage().equals("Socket closed"))
+                    main.getLogger().severe("Receive exception: " + e.getMessage());
             }
             isListening = false;
         });

@@ -27,6 +27,7 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
     EventSender eventSender;
     EventListener eventListener;
     LanguageConfig lang;
+    org.bukkit.plugin.messaging.PluginMessageListenerRegistration messagelistener;
     int[] tasks;
 
     @Override
@@ -65,6 +66,11 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
         getLogger().info("Server Timeout: " + getConfig().getInt("server_timeout") + "s");
         getLogger().info("Server Min Distance: " + config.getInt("min_distance") + " blocks");
         getLogger().info("Server Max Distance: " + config.getInt("max_distance") + " blocks");
+
+        getLogger().info("ProxiChat is ready!");
+
+        messagelistener = this.getServer().getMessenger().registerIncomingPluginChannel(this, "proxichat:bridge", eventListener);
+        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "proxichat:bridge");
     }
 
     @Override
@@ -73,6 +79,9 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
         for (var task : tasks) getServer().getScheduler().cancelTask(task);
         for (Player player : getServer().getOnlinePlayers())
             eventSender.SendPlayerQuit(player);
+        this.getServer().getMessenger().unregisterOutgoingPluginChannel(this, "proxichat:bridge");
+        this.getServer().getMessenger().unregisterIncomingPluginChannel(this, "proxichat:bridge", eventListener);
+        messagelistener = null;
         eventSender.SendClose();
         udpHandler.close();
         udpHandler = null;
@@ -81,6 +90,7 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
         eventListener.tasks.clear();
         eventListener = null;
         eventSender = null;
+        lang = null;
     }
 
     @Override

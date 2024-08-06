@@ -186,4 +186,31 @@ public class EventSender {
         }
         SendLogMessage(player, array);
     }
+
+    public void EmitPluginMessage(Player player, JsonObject object) {
+        player.sendPluginMessage(main, "proxichat:bridge", object.toString().getBytes());
+    }
+
+    public void EmitPluginPong(Player player) {
+        var json = new JsonObject();
+        json.addProperty("type", "pong");
+        EmitPluginMessage(player, json);
+    }
+
+    public void EmitPluginIsMute(Player player, boolean mute) {
+        var json = new JsonObject();
+        json.addProperty("type", "is_mute");
+        json.addProperty("mute", mute);
+        EmitPluginMessage(player, json);
+    }
+
+    public void EmitPluginInfos(Player player, String group, String display, int minDistance, int maxDistance) {
+        var json = new JsonObject();
+        json.addProperty("type", "info");
+        json.addProperty("group", group);
+        json.addProperty("display", display);
+        json.addProperty("min_distance", minDistance);
+        json.addProperty("max_distance", maxDistance);
+        EmitPluginMessage(player, json);
+    }
 }
