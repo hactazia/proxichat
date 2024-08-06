@@ -111,6 +111,24 @@ body {
     display: none;
 }
 
+.gridder .logs {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1em;
+    overflow: hidden auto;
+}
+
+.gridder .logs .log {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .5em;
+    border: solid 1px var(--primary-border);
+    border-radius: .5em;
+    box-shadow: 0 0 5px var(--primary-shadow);
+}
+
 
 
 

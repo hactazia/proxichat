@@ -1,7 +1,6 @@
 package fr.hactazia.proxichat.proxichat;
 
 import com.google.gson.JsonObject;
-
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;

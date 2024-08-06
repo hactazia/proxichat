@@ -5,39 +5,47 @@ public class LanguageConfig {
 
     // default values for the language config
     public String language = "en";
-    public String prefix = "§7[§6ProxiChat§7] ";
+    public String prefix = "§6§lP§e§lroxi§6§lC§e§lhat§r §7► §r";
     public String noPermission = "§cYou don't have the permission to do this.";
     public String noPlayer = "§cThis player is not online.";
     public String playerOnlyCommand = "§cThis command is only for players.";
 
-    public String noConnector = "§cNo connector found for your account.";
-    public String clickToLink = "§aClick here to link your account to ProxiChat!";
-    public String connectToService = "§aConnected to ProxiChat!";
-    public String disconnectFromService = "§cDisconnected from ProxiChat!";
+    public String noConnector = "No connector found for your account.";
+    public String clickToLink = "§e§lClick here§r to link your account!";
+    public String connectToService = "Connected to ProxiChat!";
+    public String disconnectFromService = "Disconnected from ProxiChat!";
 
-    public String mutePlayer = "§cYou are now muted.";
-    public String playerMuted = "§cPlayer %s is now muted.";
-    public String unmutePlayer = "§aYou are now unmuted.";
-    public String playerUnmuted = "§aPlayer %s is now unmuted.";
+    public String mutePlayer = "You are §lnow muted§r.";
+    public String playerMuted = "§oPlayer %s is §lnow muted§r§o.";
+    public String unmutePlayer = "You are §lnow unmuted§r.";
+    public String playerUnmuted = "§oPlayer %s is §lnow unmuted§r§o.";
     public String muteFailed = "§cFailed to mute player %s.";
     public String unmuteFailed = "§cFailed to unmute player %s.";
-
     public String playerMutedStatus = "§cPlayer %s is muted.";
     public String playerUnmutedStatus = "§aPlayer %s is not muted.";
 
-    public String commandList = "§aProxiChat commands:";
-    public String commandUsage = "§aUsage: /%s help";
-    public String commandHelp = "§a/%s help - Show this help message";
-    public String commandMute = "§a/%s mute <player> - Mute a player";
-    public String commandUnmute = "§a/%s unmute <player> - Unmute a player";
-    public String commandMuteToggle = "§a/%s mutetoggle <player> - Toggle mute a player";
-    public String commandLink = "§a/%s link - Link your account";
-    public String commandMuteStatus = "§a/%s mutestatus <player> - Get the mute status of a player";
+    public String deafPlayer = "You are §lnow deafened§r.";
+    public String playerDeafened = "§oPlayer %s is §lnow deafened§r§o.";
+    public String undeafPlayer = "You are §lnow undeafened§r.";
+    public String playerUndeafened = "§oPlayer %s is §lnow undeafened§r§o.";
+    public String deafFailed = "§cFailed to deafen player %s.";
+    public String undeafFailed = "§cFailed to undeafen player %s.";
+    public String playerDeafenedStatus = "§cPlayer %s is deafened.";
+    public String playerUndeafenedStatus = "§aPlayer %s is not deafened.";
 
-    public String commandMuteUsage = "§aUsage: /%s mute <player>";
-    public String commandUnmuteUsage = "§aUsage: /%s unmute <player>";
-    public String commandMuteToggleUsage = "§aUsage: /%s mutetoggle <player>";
-    public String commandMuteStatusUsage = "§aUsage: /%s mutestatus <player>";
+    public String commandList = "command list:";
+    public String commandUsage = "Usage: /%s help";
+    public String commandHelp = "/%s help - Show this help message";
+    public String commandMute = "/%s mute <player> - Mute a player";
+    public String commandUnmute = "/%s unmute <player> - Unmute a player";
+    public String commandMuteToggle = "/%s mutetoggle <player> - Toggle mute a player";
+    public String commandLink = "/%s link - Link your account";
+    public String commandMuteStatus = "/%s mutestatus <player> - Get the mute status of a player";
+
+    public String commandMuteUsage = "Usage: /%s mute <player>";
+    public String commandUnmuteUsage = "Usage: /%s unmute <player>";
+    public String commandMuteToggleUsage = "Usage: /%s mutetoggle <player>";
+    public String commandMuteStatusUsage = "Usage: /%s mutestatus <player>";
 
 
     public LanguageConfig(ProxiChatPlugin main) {
@@ -74,6 +82,12 @@ public class LanguageConfig {
         playerMutedStatus = main.getConfig().getString("player_muted_status", playerMutedStatus);
         playerUnmutedStatus = main.getConfig().getString("player_unmuted_status", playerUnmutedStatus);
         playerOnlyCommand = main.getConfig().getString("player_only_command", playerOnlyCommand);
+        deafPlayer = main.getConfig().getString("deaf_player", deafPlayer);
+        playerDeafened = main.getConfig().getString("player_deafened", playerDeafened);
+        undeafPlayer = main.getConfig().getString("undeaf_player", undeafPlayer);
+        playerUndeafened = main.getConfig().getString("player_undeafened", playerUndeafened);
+        deafFailed = main.getConfig().getString("deaf_failed", deafFailed);
+        undeafFailed = main.getConfig().getString("undeaf_failed", undeafFailed);
     }
 
     public String Format(String key, Object... args) {
@@ -148,6 +162,18 @@ public class LanguageConfig {
                 return playerUnmutedStatus;
             case "player_only_command":
                 return playerOnlyCommand;
+            case "deaf_player":
+                return deafPlayer;
+            case "player_deafened":
+                return playerDeafened;
+            case "undeaf_player":
+                return undeafPlayer;
+            case "player_undeafened":
+                return playerUndeafened;
+            case "deaf_failed":
+                return deafFailed;
+            case "undeaf_failed":
+                return undeafFailed;
             default:
                 return String.format("[%s].", key);
         }

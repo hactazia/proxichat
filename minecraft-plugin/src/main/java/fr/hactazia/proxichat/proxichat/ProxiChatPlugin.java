@@ -1,24 +1,13 @@
 package fr.hactazia.proxichat.proxichat;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
 
@@ -66,6 +55,7 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
         getLogger().info("Server Timeout: " + getConfig().getInt("server_timeout") + "s");
         getLogger().info("Server Min Distance: " + config.getInt("min_distance") + " blocks");
         getLogger().info("Server Max Distance: " + config.getInt("max_distance") + " blocks");
+        getLogger().info("Chatter Log Chat: " + config.getBoolean("chatter_log_chat"));
 
         getLogger().info("ProxiChat is ready!");
 
@@ -231,7 +221,112 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
                 sender.sendMessage(lang.Format(mute ? "player_muted_status" : "player_unmuted_status", target.getName()));
             });
             return true;
+        } else if (args[0].equalsIgnoreCase("deaf")) {
+            Player target;
+            if (args.length < 2) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(lang.Format("command_deaf_usage", command.getName()));
+                    return true;
+                } else target = (Player) sender;
+            } else {
+                if (!sender.isOp()) {
+                    sender.sendMessage(lang.Format("no_permission"));
+                    return true;
+                }
+                target = getServer().getPlayer(args[1]);
+            }
+            if (target == null) {
+                sender.sendMessage(lang.Format("no_player"));
+                return true;
+            }
+
+            eventSender.SetDeaf(target, true).thenAccept(success -> {
+                if (success) {
+                    if (sender != target)
+                        sender.sendMessage(lang.Format("player_deaf", target.getName()));
+                    target.sendMessage(lang.Format("deaf_player"));
+                } else {
+                    sender.sendMessage(lang.Format("deaf_failed", target.getName()));
+                }
+            });
+            return true;
+        } else if (args[0].equalsIgnoreCase("undeaf")) {
+            Player target;
+            if (args.length < 2) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(lang.Format("command_undeaf_usage", command.getName()));
+                    return true;
+                } else target = (Player) sender;
+            } else {
+                if (!sender.isOp()) {
+                    sender.sendMessage(lang.Format("no_permission"));
+                    return true;
+                }
+                target = getServer().getPlayer(args[1]);
+            }
+            if (target == null) {
+                sender.sendMessage(lang.Format("no_player"));
+                return true;
+            }
+
+            eventSender.SetDeaf(target, false).thenAccept(success -> {
+                if (success) {
+                    if (sender != target)
+                        sender.sendMessage(lang.Format("player_undeaf", target.getName()));
+                    target.sendMessage(lang.Format("undeaf_player"));
+                } else {
+                    sender.sendMessage(lang.Format("undeaf_failed", target.getName()));
+                }
+            });
+            return true;
+        } else if (args[0].equalsIgnoreCase("deaftoggle")) {
+            Player target;
+            if (args.length < 2) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(lang.Format("command_deaf_toggle_usage", command.getName()));
+                    return true;
+                } else target = (Player) sender;
+            } else {
+                if (!sender.isOp()) {
+                    sender.sendMessage(lang.Format("no_permission"));
+                    return true;
+                }
+                target = getServer().getPlayer(args[1]);
+            }
+            if (target == null) {
+                sender.sendMessage(lang.Format("no_player"));
+                return true;
+            }
+
+            eventListener.isDeaf(target).thenAccept(deaf -> {
+                eventSender.SetDeaf(target, !deaf).thenAccept(success -> {
+                    if (success) {
+                        if (sender != target)
+                            sender.sendMessage(lang.Format(deaf ? "player_undeaf" : "player_deaf", target.getName()));
+                        target.sendMessage(lang.Format(deaf ? "undeaf_player" : "deaf_player"));
+                    } else {
+                        sender.sendMessage(lang.Format(deaf ? "undeaf_failed" : "deaf_failed", target.getName()));
+                    }
+                });
+            });
+
+            return true;
+        } else if (args[0].equalsIgnoreCase("deafstatus")) {
+            if (args.length < 2) {
+                sender.sendMessage(lang.Format("command_deaf_status_usage", command.getName()));
+                return true;
+            }
+            Player target = getServer().getPlayer(args[1]);
+            if (target == null) {
+                sender.sendMessage(lang.Format("no_player"));
+                return true;
+            }
+            eventListener.isDeaf(target).thenAccept(deaf -> {
+                sender.sendMessage(lang.Format(deaf ? "player_deaf_status" : "player_undeaf_status", target.getName()));
+            });
+            return true;
         }
+
         return false;
     }
 
@@ -245,12 +340,19 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
             list.add("mutetoggle");
             list.add("link");
             list.add("mutestatus");
+            list.add("deaf");
+            list.add("undeaf");
+            list.add("deaftoggle");
             return list;
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("mute")
                     || args[0].equalsIgnoreCase("unmute")
                     || args[0].equalsIgnoreCase("mutetoggle")
                     || args[0].equalsIgnoreCase("mutestatus")
+                    || args[0].equalsIgnoreCase("deaf")
+                    || args[0].equalsIgnoreCase("undeaf")
+                    || args[0].equalsIgnoreCase("deaftoggle")
+                    || args[0].equalsIgnoreCase("deafstatus")
             ) {
                 var list = new ArrayList<String>();
                 for (var player : getServer().getOnlinePlayers()) {

@@ -3,7 +3,6 @@ package fr.hactazia.proxichat.proxichat;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -138,6 +137,15 @@ public class EventSender {
         return future;
     }
 
+    public CompletableFuture<Boolean> SetDeaf(Player player, boolean deaf) {
+        var future = new CompletableFuture<Boolean>();
+        var json = new JsonObject();
+        json.addProperty("deaf", deaf);
+        SendData(player, "set_deaf", json);
+        main.eventListener.isDeaf(player).thenAccept(deaf1 -> future.complete(deaf1 == deaf));
+        return future;
+    }
+
     public void SendLogMessage(Player player, String message) {
         var json = new JsonObject();
         json.addProperty("type", "log");
@@ -201,6 +209,13 @@ public class EventSender {
         var json = new JsonObject();
         json.addProperty("type", "is_mute");
         json.addProperty("mute", mute);
+        EmitPluginMessage(player, json);
+    }
+
+    public void EmitPluginIsDeaf(Player player, boolean deaf) {
+        var json = new JsonObject();
+        json.addProperty("type", "is_deaf");
+        json.addProperty("deaf", deaf);
         EmitPluginMessage(player, json);
     }
 

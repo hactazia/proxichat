@@ -17,7 +17,7 @@ let ready = false;
 let inVolume = 1;
 let outVolume = 1;
 let isMuted = { mute: false, by: 0 };
-let isSound = { sound: true, by: 0 };
+let isDeaf = { deaf: false, by: 0 };
 
 window.proxichat = {
     lsc,
@@ -27,7 +27,8 @@ window.proxichat = {
     streams,
     ready,
     inVolume,
-    isMuted
+    isMuted,
+    isDeaf
 };
 
 function setMute(isActive, by) {
@@ -39,14 +40,35 @@ function setMute(isActive, by) {
             console.log('stream not found', player.peer_id);
             continue;
         }
-        console.log('setMute', player.peer_id, stream.volume, isMuted.mute ? 0 : inVolume);
-        changeVolume(streams, player.peer_id, stream.volume, isMuted.mute ? 0 : inVolume);
+        console.log('setMute', player.peer_id, stream.volume, isMuted.mute || isDeaf.deaf ? 0 : inVolume);
+        changeVolume(streams, player.peer_id, stream.volume, isMuted.mute || isDeaf.deaf ? 0 : inVolume);
     }
     sendSessionData(sessions.selectedSession._id, 'is_mute', isMuted);
 
     let btn = document.getElementById('mute-button');
     if (btn) {
         if (isMuted.mute) btn.classList.add('active');
+        else btn.classList.remove('active');
+    }
+}
+
+function setDeaf(isActive, by) {
+    isDeaf = { deaf: isActive, by: by };
+    Logger.logText(`You are ${isDeaf.deaf ? 'deaf' : 'undeaf'} by ${by === 1 ? 'you' : 'the session'}.`);
+    for (let player of sessions.selectedSession.players) {
+        let stream = streams.out_streams.get(player.peer_id);
+        if (!stream) {
+            console.log('stream not found', player.peer_id);
+            continue;
+        }
+        console.log('setDeaf', player.peer_id, stream.volume, isMuted.mute || isDeaf.deaf ? 0 : inVolume);
+        changeVolume(streams, player.peer_id, stream.volume, isMuted.mute || isDeaf.deaf ? 0 : inVolume);
+    }
+    sendSessionData(sessions.selectedSession._id, 'is_deaf', isDeaf);
+
+    let btn = document.getElementById('deaf-button');
+    if (btn) {
+        if (isDeaf.deaf) btn.classList.add('active');
         else btn.classList.remove('active');
     }
 }
@@ -180,9 +202,7 @@ socket.on('message', (event, data) => {
         if (typeof message === 'string') message = [{ text: message }];
         if (typeof message === 'object' && !Array.isArray(message)) message = [message];
         message = message.map(m => typeof m === 'string' ? { text: m } : m);
-
         var node = document.createElement('div');
-        node.classList.add('message');
         for (let m of message) {
             let span = document.createElement('span');
             span.textContent = m.text;
@@ -192,6 +212,11 @@ socket.on('message', (event, data) => {
             node.appendChild(span);
         }
         Logger.logNode(node);
+    }else if (data.event === 'set_deaf') {
+        console.log('set_deaf', data.data.deaf);
+        setDeaf(data.data.deaf, 2);
+    } else if (data.event === 'get_deaf') {
+        sendSessionData(session._id, 'is_deaf', { ...isDeaf, state: data.data.state });
     }
 });
 
@@ -361,10 +386,19 @@ window.addEventListener('load', async () => {
 
     window.addEventListener('keydown', (e) => {
         if (e.key === 'm') setMute(!isMuted.mute, 1);
+        if (e.key === 'd') setDeaf(!isDeaf.deaf, 1);
     });
 
     document.getElementById('mute-button').addEventListener('click', (e) => {
         setMute(!isMuted.mute, 1);
+    });
+
+    document.getElementById('deaf-button').addEventListener('click', (e) => {
+        setDeaf(!isDeaf.deaf, 1);
+    });
+
+    window.addEventListener('beforeunload', (e) => {
+        socket.send('disconnect_session');
     });
 
     socket.connect(location.origin, getCookies()['_uid']);

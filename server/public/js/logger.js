@@ -5,12 +5,16 @@ export default class Logger {
 
     static logText(text) {
         let p = document.createElement('p');
+        p.classList.add('log');
         p.innerText = text;
         this.node.appendChild(p);
     }
 
     static logNode(node) {
-        this.node.appendChild(node);
+        let p = document.createElement('p');
+        p.classList.add('log');
+        p.appendChild(node);
+        this.node.appendChild(p);
     }
 
     static clear() {

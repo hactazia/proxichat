@@ -161,40 +161,36 @@ export default class SessionManager extends EventEmitter {
         let muted = node.querySelector('.button-mute');
 
         volume.addEventListener('input', () => {
-          audio.volume = volume.value / 100;
+          audio.volume = window.proxichat.isDeaf.deaf ? 0 : volume.value / 100;
+          audio.muted = audio.volume === 0;
           if (volume.value === '0') {
             muted.classList.add('muted');
-            audio.muted = true;
           }
           else {
             muted.classList.remove('muted');
-            audio.muted = false;
           }
         });
 
         muted.addEventListener('click', () => {
           if (audio.volume === 0) {
-            audio.volume = volume.value / 100;
-            if (volume.value !== '0') {
+            audio.volume = window.proxichat.isDeaf.deaf ? 0 : volume.value / 100;
+            audio.muted = audio.volume === 0;
+            if (volume.value !== '0')
               muted.classList.remove('muted');
-              audio.muted = false;
-            }
           } else {
             audio.volume = 0;
             muted.classList.add('muted');
-            audio.muted = true;
+            audio.muted = audio.volume === 0;
           }
         });
 
-
-
         if (volume.value !== '0') {
-          audio.volume = volume.value / 100;
-          audio.muted = false;
+          audio.volume = window.proxichat.isDeaf.deaf ? 0 : volume.value / 100;
+          audio.muted = audio.volume === 0;
           muted.classList.remove('muted');
         } else {
           audio.volume = 0;
-          audio.muted = true;
+          audio.muted = audio.volume === 0;
           muted.classList.add('muted');
         }
 
