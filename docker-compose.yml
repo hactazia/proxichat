@@ -1,0 +1,13 @@
+version: '3.7'
+# import .env file to use environment variables
+
+services:
+  server:
+    image: proxichat/server:latest
+    container_name: proxichat-server
+    restart: always
+    env_file:
+        - .env
+    ports:
+      - "${UDP_PORT}:${UDP_PORT}/udp"
+      - "${HTTP_PORT}:${HTTP_PORT}"
