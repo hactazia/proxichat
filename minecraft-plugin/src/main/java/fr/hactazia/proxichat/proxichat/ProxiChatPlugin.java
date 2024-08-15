@@ -32,6 +32,8 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
         config.addDefault("server_port", 3000);
         config.addDefault("server_ping", 1); // 1 second
         config.addDefault("server_timeout", 5); // 5 seconds
+        config.addDefault("server_token", ""); // empty token
+        config.addDefault("log_message", ""); // message sended on chatter login
         config.options().copyDefaults(true);
         saveConfig();
 

@@ -50,6 +50,7 @@ public class LanguageConfig {
 
     public LanguageConfig(ProxiChatPlugin main) {
         this.main = main;
+        load();
     }
 
     public void load() {

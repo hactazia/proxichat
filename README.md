@@ -23,7 +23,7 @@ This project aims to add proximity-based voice chat to any game by bringing a we
 
 1. Clone the repository.
 2. Go to `server/` folder.
-3. Then install and run the app: `npm install` & `npm run start`.
+3. Then install and run the app: `npm install` & `npm run dev`.
 4. Change `.env.example` to `.env` and fill in the necessary information.
 5. To start the server, run `npm run dev`.
 
@@ -34,7 +34,8 @@ This project aims to add proximity-based voice chat to any game by bringing a we
 3. With idea, open the project, `package` projet with Maven.
 4. Copy the jar file in the `target` folder to your server's plugin folder.
 5. After first running, change the config in `config.yml` in the plugin folder.
-6. Restart the server.
+6. Add in config file, the [generated token](#for-make-a-token) at `server_token`.
+7. Restart the server.
 
 ### For Make a Token
 
