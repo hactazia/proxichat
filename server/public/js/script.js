@@ -33,7 +33,7 @@ window.proxichat = {
 
 function setMute(isActive, by) {
     isMuted = { mute: isActive, by: by };
-    Logger.logText(`You are ${isMuted.mute ? 'muted' : 'unmuted'} by ${by === 1 ? 'you' : 'the session'}.`);
+    Logger.logText(`You've been ${isMuted.mute ? 'muted' : 'unmuted'} by ${by === 1 ? 'yourself' : 'the session'}.`);
     for (let player of sessions.selectedSession.players) {
         let stream = streams.out_streams.get(player.peer_id);
         if (!stream) {
@@ -54,7 +54,7 @@ function setMute(isActive, by) {
 
 function setDeaf(isActive, by) {
     isDeaf = { deaf: isActive, by: by };
-    Logger.logText(`You are ${isDeaf.deaf ? 'deaf' : 'undeaf'} by ${by === 1 ? 'you' : 'the session'}.`);
+    Logger.logText(`You've been ${isDeaf.deaf ? 'deafened' : 'undeafened'} by ${by === 1 ? 'yourself' : 'the session'}.`);
     for (let player of sessions.selectedSession.players) {
         let stream = streams.out_streams.get(player.peer_id);
         if (!stream) {
@@ -97,7 +97,7 @@ socket.on('message', (event, data) => {
     // auto join session (update)
 
     if (ready && !sessions.selectedSession && sessions.sessions.size === 1) {
-        Logger.logText('Auto joining session.');
+        Logger.logText('Joining session automatically');
         sessions.emit('select', sessions.sessions.values().next().value);
     }
 });
@@ -112,7 +112,7 @@ socket.on('message', (event, data) => {
     ready = true;
     console.log(!sessions.selectedSession, sessions.sessions.size);
     if (!sessions.selectedSession && sessions.sessions.size === 1) {
-        Logger.logText('Auto joining session.');
+        Logger.logText('Joining session automatically');
         sessions.emit('select', sessions.sessions.values().next().value);
     }
 });
