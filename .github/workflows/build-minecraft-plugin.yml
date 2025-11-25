@@ -7,6 +7,18 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      minecraft_version:
+        description: 'Minecraft version to build for'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - '1.19'
+          - '1.20'
+          - '1.21'
 
 permissions:
   contents: write
@@ -14,6 +26,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        minecraft_version: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.minecraft_version != 'all' && fromJson(format('["{0}"]', github.event.inputs.minecraft_version)) || fromJson('["1.19", "1.20", "1.21"]') }}
+      fail-fast: false
     
     steps:
       - name: Checkout repository
@@ -26,15 +42,22 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
-        run: mvn clean package -B
+      - name: Build with Maven for Minecraft ${{ matrix.minecraft_version }}
+        run: mvn clean package -B -Dspigot.version=${{ matrix.minecraft_version }}-R0.1-SNAPSHOT
         working-directory: minecraft-plugin
+
+      - name: Rename artifact with version
+        run: |
+          cd minecraft-plugin/target
+          for f in ProxiChatPlugin-*.jar; do
+            mv "$f" "${f%.jar}-${{ matrix.minecraft_version }}.jar"
+          done
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ProxiChatPlugin
-          path: minecraft-plugin/target/ProxiChatPlugin-*.jar
+          name: ProxiChatPlugin-${{ matrix.minecraft_version }}
+          path: minecraft-plugin/target/ProxiChatPlugin-*-${{ matrix.minecraft_version }}.jar
 
   release:
     runs-on: ubuntu-latest
@@ -45,10 +68,11 @@ jobs:
       contents: write
     
     steps:
-      - name: Download artifact
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: ProxiChatPlugin
+          pattern: ProxiChatPlugin-*
+          merge-multiple: true
 
       - name: Get short SHA
         id: get_sha
@@ -64,10 +88,15 @@ jobs:
             
             **Commit:** ${{ steps.get_sha.outputs.SHA_SHORT }}
             
+            ### Versions disponibles
+            - **MC 1.19** - Compatible Minecraft 1.19.x
+            - **MC 1.20** - Compatible Minecraft 1.20.x
+            - **MC 1.21** - Compatible Minecraft 1.21.x
+            
             ### Installation
-            1. Download the attached JAR file
-            2. Place it in the `plugins` folder of your Minecraft server
-            3. Restart your server
+            1. Téléchargez le fichier JAR correspondant à votre version de Minecraft
+            2. Placez-le dans le dossier `plugins` de votre serveur Minecraft
+            3. Redémarrez votre serveur
           files: |
             ProxiChatPlugin-*.jar
           draft: false
