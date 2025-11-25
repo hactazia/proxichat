@@ -79,7 +79,7 @@ jobs:
 
       - name: Create Release
         id: release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
           name: ProxiChat Plugin Build #${{ github.run_number }}
