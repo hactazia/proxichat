@@ -1,15 +1,22 @@
-name: Build Minecraft Plugin
+name: Build Minecraft Plugin & Release
 
 on:
   push:
+    branches:
+      - '**'
     tags:
       - 'v*'
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
+    permissions:
+      contents: write
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,24 +29,31 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: mvn -B clean package --file minecraft-plugin/pom.xml
+        run: mvn clean package -B
+        working-directory: minecraft-plugin
 
-      - name: Get plugin version
-        id: version
-        run: |
-          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout --file minecraft-plugin/pom.xml)
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+      - name: Get version from tag
+        id: get_version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          name: ProxiChatPlugin ${{ github.ref_name }}
+          name: ProxiChat Plugin ${{ steps.get_version.outputs.VERSION }}
           body: |
-            ## ProxiChatPlugin ${{ github.ref_name }}
+            ## ProxiChat Minecraft Plugin ${{ steps.get_version.outputs.VERSION }}
             
             ### Installation
-            Téléchargez le fichier JAR ci-dessous et placez-le dans le dossier `plugins` de votre serveur Minecraft.
-          files: minecraft-plugin/target/ProxiChatPlugin-*.jar
+            1. Téléchargez le fichier JAR ci-dessous
+            2. Placez-le dans le dossier `plugins` de votre serveur Minecraft
+            3. Redémarrez votre serveur
+            
+            ### Changelog
+            Voir les commits pour les détails des changements.
+          files: |
+            minecraft-plugin/target/ProxiChatPlugin-*.jar
           draft: false
           prerelease: false
         env:
