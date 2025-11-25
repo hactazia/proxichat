@@ -65,9 +65,9 @@ jobs:
             **Commit:** ${{ steps.get_sha.outputs.SHA_SHORT }}
             
             ### Installation
-            1. Téléchargez le fichier JAR ci-dessous
-            2. Placez-le dans le dossier `plugins` de votre serveur Minecraft
-            3. Redémarrez votre serveur
+            1. Download the attached JAR file
+            2. Place it in the `plugins` folder of your Minecraft server
+            3. Restart your server
           files: |
             ProxiChatPlugin-*.jar
           draft: false
