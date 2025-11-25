@@ -1,12 +1,6 @@
-name: Build Minecraft Plugin & Release
+name: Build & Release Minecraft Plugin
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       minecraft_version:
@@ -28,11 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        minecraft_version: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.minecraft_version != 'all' && fromJson(format('["{0}"]', github.event.inputs.minecraft_version)) || fromJson('["1.19", "1.20", "1.21"]') }}
+        minecraft_version: ${{ github.event.inputs.minecraft_version == 'all' && fromJson('["1.19","1.20","1.21"]') || fromJson(format('["{0}"]', github.event.inputs.minecraft_version)) }}
       fail-fast: false
-    
+
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Set up JDK 21
@@ -42,11 +36,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven for Minecraft ${{ matrix.minecraft_version }}
+      - name: Build plugin
         run: mvn clean package -B -Dspigot.version=${{ matrix.minecraft_version }}-R0.1-SNAPSHOT
         working-directory: minecraft-plugin
 
-      - name: Rename artifact with version
+      - name: Rename artifact
         run: |
           cd minecraft-plugin/target
           for f in ProxiChatPlugin-*.jar; do
@@ -59,19 +53,48 @@ jobs:
           name: ProxiChatPlugin-${{ matrix.minecraft_version }}
           path: minecraft-plugin/target/ProxiChatPlugin-*-${{ matrix.minecraft_version }}.jar
 
-  release:
+  verify:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Verify artifacts exist
+        run: |
+          for file in artifacts/ProxiChatPlugin-*/*.jar; do
+            if [ ! -f "$file" ]; then
+              echo "Artifact $file missing!"
+              exit 1
+            fi
+            echo "Verified $file"
+          done
+
+      - name: "Optional: Verify file sizes"
+        run: |
+          for file in artifacts/ProxiChatPlugin-*/*.jar; do
+            size=$(stat -c%s "$file")
+            if [ $size -lt 50000 ]; then
+              echo "Artifact $file seems too small ($size bytes)"
+              exit 1
+            fi
+          done
+
+  release:
+    needs: verify
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'  # Only release from main branch
     permissions:
       contents: write
-    
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
 
-      - name: Display structure
-        run: ls -R
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
 
       - name: Get short SHA
         id: get_sha
@@ -100,6 +123,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            ProxiChatPlugin-*/*
+            artifacts/ProxiChatPlugin-*/*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
