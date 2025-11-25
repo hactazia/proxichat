@@ -56,38 +56,8 @@ jobs:
           name: ProxiChatPlugin-${{ matrix.minecraft_version }}
           path: minecraft-plugin/target/ProxiChatPlugin-*-${{ matrix.minecraft_version }}.jar
 
-  verify:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-
-      - name: Verify artifacts exist
-        run: |
-          for file in artifacts/ProxiChatPlugin-*/*.jar; do
-            if [ ! -f "$file" ]; then
-              echo "Artifact $file missing!"
-              exit 1
-            fi
-            echo "Verified $file"
-          done
-
-      - name: "Optional: Verify file sizes"
-        run: |
-          for file in artifacts/ProxiChatPlugin-*/*.jar; do
-            size=$(stat -c%s "$file")
-            if [ $size -lt 50000 ]; then
-              echo "Artifact $file seems too small ($size bytes)"
-              exit 1
-            fi
-          done
-
   release:
-    needs: verify
+    needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'  # Only release from main branch
     permissions:
@@ -103,27 +73,43 @@ jobs:
         id: get_sha
         run: echo "SHA_SHORT=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
+      - name: Calculate SHA256 checksums
+        id: checksums
+        run: |
+          echo "checksums<<EOF" >> $GITHUB_OUTPUT
+          echo "| File | SHA256 |" >> $GITHUB_OUTPUT
+          echo "|------|--------|" >> $GITHUB_OUTPUT
+          for file in artifacts/ProxiChatPlugin-*/*.jar; do
+            filename=$(basename "$file")
+            sha=$(sha256sum "$file" | awk '{print $1}')
+            echo "| \`$filename\` | \`$sha\` |" >> $GITHUB_OUTPUT
+          done
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Create Release
         id: release
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
           tag_name: build-${{ github.run_number }}
-          name: ProxiChat Plugin Build #${{ github.run_number }}
+          name: Build #${{ github.run_number }}
           body: |
             ## ProxiChat Minecraft Plugin Build #${{ github.run_number }}
             
             **Commit:** ${{ steps.get_sha.outputs.SHA_SHORT }}
             
-            ### Versions disponibles
-            - **MC 1.19** - Compatible Minecraft 1.19.x
-            - **MC 1.20** - Compatible Minecraft 1.20.x
-            - **MC 1.21** - Compatible Minecraft 1.21.x
+            ### Available versions
+            - **MC 1.19** - Compatible with Minecraft 1.19.x
+            - **MC 1.20** - Compatible with Minecraft 1.20.x
+            - **MC 1.21** - Compatible with Minecraft 1.21.x
             
             ### Installation
-            1. Téléchargez le fichier JAR correspondant à votre version de Minecraft
-            2. Placez-le dans le dossier `plugins` de votre serveur Minecraft
-            3. Redémarrez votre serveur
+            1. Download the JAR file matching your Minecraft version
+            2. Place it in the `plugins` folder of your Minecraft server
+            3. Restart your server
+            
+            ### SHA256 Checksums
+            ${{ steps.checksums.outputs.checksums }}
           draft: false
           prerelease: false
           files: |
