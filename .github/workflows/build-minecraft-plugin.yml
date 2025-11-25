@@ -3,9 +3,7 @@ name: Build Minecraft Plugin & Release
 on:
   push:
     branches:
-      - '**'
-    tags:
-      - 'v*'
+      - main
   pull_request:
     branches:
       - main
@@ -38,7 +36,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: build
-    if: startsWith(github.ref, 'refs/tags/')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     permissions:
       contents: write
@@ -49,24 +47,24 @@ jobs:
         with:
           name: ProxiChatPlugin
 
-      - name: Get version from tag
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      - name: Get short SHA
+        id: get_sha
+        run: echo "SHA_SHORT=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          name: ProxiChat Plugin ${{ steps.get_version.outputs.VERSION }}
+          tag_name: build-${{ github.run_number }}
+          name: ProxiChat Plugin Build #${{ github.run_number }}
           body: |
-            ## ProxiChat Minecraft Plugin ${{ steps.get_version.outputs.VERSION }}
+            ## ProxiChat Minecraft Plugin Build #${{ github.run_number }}
+            
+            **Commit:** ${{ steps.get_sha.outputs.SHA_SHORT }}
             
             ### Installation
             1. Téléchargez le fichier JAR ci-dessous
             2. Placez-le dans le dossier `plugins` de votre serveur Minecraft
             3. Redémarrez votre serveur
-            
-            ### Changelog
-            Voir les commits pour les détails des changements.
           files: |
             ProxiChatPlugin-*.jar
           draft: false
