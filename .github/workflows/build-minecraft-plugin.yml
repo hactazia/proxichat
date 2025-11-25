@@ -107,7 +107,7 @@ jobs:
         id: release
         uses: softprops/action-gh-release@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
           tag_name: build-${{ github.run_number }}
           name: ProxiChat Plugin Build #${{ github.run_number }}
           body: |
@@ -128,3 +128,5 @@ jobs:
           prerelease: false
           files: |
             artifacts/ProxiChatPlugin-*/*.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
