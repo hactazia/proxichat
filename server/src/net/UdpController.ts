@@ -11,6 +11,20 @@ export default class UdpController {
 
     init() {
         this.socket.on('message', this.onMessage.bind(this));
+
+        this.socket.on('error', (err) => {
+            console.error(`[UDP] Socket error:\n${err.stack}`);
+            this.socket.close();
+        });
+
+        this.socket.on('listening', () => {
+            const address = this.socket.address();
+            console.log(`[UDP] Server listening on ${address.address}:${address.port}`);
+        });
+
+        this.socket.on('connect', () => {
+            console.log('[UDP] Socket connected');
+        });
     }
 
     async listen() {
@@ -21,7 +35,10 @@ export default class UdpController {
 
     onMessage(msg: Buffer, rinfo: { address: string, port: number }) {
         var json = null;
-        try { json = JSON.parse(msg.toString()); } catch { }
+        console.log(`[UDP] Received ${msg.length} bytes from ${rinfo.address}:${rinfo.port}:`, msg.toString().substring(0, 200));
+        try { json = JSON.parse(msg.toString()); } catch (e) { 
+            console.log('[UDP] Failed to parse JSON:', e);
+        }
         this.netManager.main.emit('net_message', {
             callback: (data: Buffer | string | object) => {
                 if (typeof data === 'string') this.socket.send(Buffer.from(data), rinfo.port, rinfo.address);

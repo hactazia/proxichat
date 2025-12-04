@@ -4,10 +4,20 @@ version: '3.7'
 services:
   server:
     image: proxichat/server:latest
-    container_name: proxichat-server
+    container_name: proxichat
     restart: always
     env_file:
         - .env
     ports:
       - "${UDP_PORT}:${UDP_PORT}/udp"
       - "${HTTP_PORT}:${HTTP_PORT}"
+    networks:
+      - nginx
+      - default
+
+networks:
+  nginx:
+    name: nginx
+    driver: bridge
+  default:
+    driver: bridge

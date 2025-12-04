@@ -27,9 +27,16 @@ public class UdpHandler {
 
     public void send(byte[] message) {
         try {
-            socket.send(new DatagramPacket(message, message.length, serverIp, serverPort));
+            main.getLogger().info("Sending UDP message (" + message.length + " bytes) to " + serverIp.getHostAddress() + ":" + serverPort);
+            if (message.length > 1400) {
+                main.getLogger().warning("UDP message size (" + message.length + " bytes) exceeds typical MTU. This may cause delivery issues!");
+            }
+            DatagramPacket packet = new DatagramPacket(message, message.length, serverIp, serverPort);
+            socket.send(packet);
+            main.getLogger().info("UDP packet sent successfully");
         } catch (Exception e) {
             main.getLogger().severe("Sending exception: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

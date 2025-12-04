@@ -43,6 +43,7 @@ export class NetHandler {
     }
 
     onMessage(data: NetPacket) {
+        console.log(data.json);
         var server = this.getServer(data.address, data.port);
 
         if (!server) {
